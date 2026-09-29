@@ -11,20 +11,25 @@ public class ListaTarefas {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
         List<String> lista = new ArrayList<>();
+        System.out.println(" ");
+        System.out.println("Lista de tarefas atual:");
+        System.out.println(" ");
+        importarLista(lista);
 
         while(true){
-            System.out.println("Selecione um dos itens:");
+            System.out.println(" ");
             System.out.println("1- Adicionar tarefa");
             System.out.println("2- Listar tarefas");
             System.out.println("3- Concluir tarefa");
             System.out.println("4- Remover tarefa");
-            System.out.println("5- Encerrar sistema e salvar lista");
+            System.out.println("5- Remover todas as tarefas");
+            System.out.println("6- Encerrar sistema e salvar lista");
             int menu = 0;
             try{
                 menu = sc.nextInt();
                 sc.nextLine();
-                if(1 > menu || menu > 4){
-                    System.out.println("Digite um valor entre 1 e 4");
+                if(1 > menu || menu > 6){
+                    System.out.println("Digite um valor entre 1 e 6");
                     continue;
                 }
             }catch (InputMismatchException e){
@@ -46,6 +51,33 @@ public class ListaTarefas {
                     removerTarefa(sc,lista);
                     continue;
                 case 5:
+                    System.out.println("Você tem certeza que gostaria de apagar todas as tarefas?");
+                    System.out.println("1 - SIM");
+                    System.out.println("2 - NÃO");
+                    int confirmacao;
+                    try{
+                        confirmacao = sc.nextInt();
+                        sc.nextLine();
+                        if(1 > confirmacao || confirmacao > 2){
+                            System.out.println("Digite um valor entre 1 e 2");
+                            continue;
+                        }
+                    }catch (InputMismatchException e){
+                        System.out.println("Digite um valor valido");
+                        sc.nextLine();
+                        continue;
+                    }
+
+                    if(confirmacao == 1){
+                        apagarLista(lista);
+                        continue;
+                    }else if(confirmacao == 2){
+                        System.out.println("Nenhum dado foi apagado");
+                        continue;
+                    }
+
+                case 6:
+                    salvarArquivo(lista);
                     return;
             }
 
@@ -62,11 +94,17 @@ public class ListaTarefas {
             System.out.println("Nenhuma tarefa foi encontrada");
             return;
         }
+        System.out.println("Lista de tarefas atual:");
+        System.out.println(" ");
         for (int i = 0; i < lista.size(); i++) {
          System.out.printf("Tarefa Nª %d: %s\n",i+1 ,lista.get(i));
         }
     }
     public static void removerTarefa(Scanner sc, List<String> lista){
+        if(lista.isEmpty()){
+            System.out.println("Nenhuma tarefa foi encontrada");
+            return;
+        }
         int remove;
         try{
            System.out.println("Qual tarefa você gostaria de remover? ");
@@ -77,6 +115,7 @@ public class ListaTarefas {
            System.out.println("Tarefa removida com sucesso! ");
        }catch (InputMismatchException e){
             System.out.println("Digite um valor valido");
+            sc.nextLine();
         }catch (IndexOutOfBoundsException e){
             System.out.println("Digite um valor maior ou menor que a quantidae de tarefas existentes");
         }
@@ -125,16 +164,41 @@ public class ListaTarefas {
             System.out.println("Erro ao alterar arquivo");
         }
     }
-    public static void lerArquivo(List<String> lista){
+    public static void importarLista(List<String> lista){
         Path arquivo = Paths.get("Lista de tarefas.txt");
         if(!Files.exists(arquivo)){
-            System.out.println("Arquivo não encontrado");
+            System.out.println("Ainda não existe uma lista de tarefas.");
+            return;
         }
         try{
             List<String> listaCarregada = new ArrayList<>(Files.readAllLines(arquivo));
             listarTarefas(listaCarregada);
+            lista.addAll(listaCarregada);
+
         }catch (IOException e){
             System.out.println("Erro ao ler arquivo" + e.getMessage());
         }
     }
+    public static void apagarLista(List<String> lista){
+        Path arquivo = Paths.get("Lista de tarefas.txt");
+
+        if (!Files.exists(arquivo)) {
+            if(lista.isEmpty()){
+                System.out.println("A lista esta vazia");
+            }else{
+                lista.clear();
+                System.out.println("Lista apagada com sucesso!");
+            }
+            System.out.println("Arquivo não encontrado.");
+            return;
+        }
+
+        try {
+            Files.write(arquivo, new byte[0]);
+            lista.clear();
+            System.out.println("Conteúdo do arquivo apagado com sucesso.");
+        } catch (IOException e) {
+            System.out.println("Erro ao limpar arquivo: " + e.getMessage());
+        }
+}
 }
